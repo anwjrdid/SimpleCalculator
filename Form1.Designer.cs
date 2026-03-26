@@ -113,6 +113,7 @@
             button_divide.TabIndex = 6;
             button_divide.Text = "/";
             button_divide.UseVisualStyleBackColor = true;
+            button_divide.Click += button_divide_Click;
             // 
             // button_7
             // 
@@ -152,6 +153,7 @@
             button_multiply.TabIndex = 10;
             button_multiply.Text = "*";
             button_multiply.UseVisualStyleBackColor = true;
+            button_multiply.Click += button_multiply_Click;
             // 
             // button_4
             // 
@@ -191,6 +193,7 @@
             button_sub.TabIndex = 14;
             button_sub.Text = "-";
             button_sub.UseVisualStyleBackColor = true;
+            button_sub.Click += button_sub_Click;
             // 
             // button_1
             // 
