@@ -246,6 +246,7 @@
             button_negative.TabIndex = 19;
             button_negative.Text = "+ / -";
             button_negative.UseVisualStyleBackColor = true;
+            button_negative.Click += button_negative_Click;
             // 
             // button_0
             // 
@@ -265,6 +266,7 @@
             button_dot.TabIndex = 21;
             button_dot.Text = ".";
             button_dot.UseVisualStyleBackColor = true;
+            button_dot.Click += button_dot_Click;
             // 
             // button_input
             // 
