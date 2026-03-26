@@ -5,64 +5,73 @@ namespace SimpleCalculator
 {
     public partial class Form1 : Form
     {
-        // 계산 상태를 기억하기 위한 변수들
-        int currentResult = 0;
-        string currentOperator = "";
-        bool isOperatorClicked = false;
+        int firstOperand = 0; // 첫 번째 숫자 저장
+        bool isNewInput = true; // 새로운 숫자를 입력받을 타이밍인지 확인
 
         public Form1()
         {
             InitializeComponent();
         }
 
-        // 1. 숫자 버튼 클릭 이벤트
+        // 1. 숫자 버튼 클릭 (button_0 ~ button_9 전부 이 이벤트로 연결!)
         private void NumberButton_Click(object sender, EventArgs e)
         {
             Button btn = (Button)sender;
 
-            // 초기 상태(0)이거나 연산자가 눌린 직후라면 입력창을 비워줌
-            if (textBox_input.Text == "0" || isOperatorClicked)
+            // 새로운 숫자를 입력할 타이밍(처음이거나, + 누른 직후거나, = 누른 직후)
+            if (isNewInput)
             {
-                textBox_input.Clear();
-                isOperatorClicked = false;
+                textBox_result.Clear(); // 아래쪽 창 비우기
+
+                // 만약 이전에 '='을 눌러서 계산이 끝난 상태라면 위쪽 창도 비워주기
+                if (textBox_input.Text.Contains("="))
+                {
+                    textBox_input.Clear();
+                }
+
+                isNewInput = false;
             }
 
-            // 누른 숫자를 위쪽 input 화면에 이어 붙이기
+            // 아래쪽 창(현재 숫자)과 위쪽 창(전체 수식)에 방금 누른 숫자 찍기
+            textBox_result.Text += btn.Text;
             textBox_input.Text += btn.Text;
         }
 
-        // 2. 더하기(+) 버튼 클릭 이벤트
+        // 2. 더하기(+) 버튼 클릭 이벤트 (button_plus)
         private void button_plus_Click(object sender, EventArgs e)
         {
-            // 위쪽 input 창에 입력된 문자를 정수로 변환하여 저장
-            currentResult = int.Parse(textBox_input.Text);
-            currentOperator = "+";
-            isOperatorClicked = true;
+            // 빈칸이 아닐 때만 현재까지 입력된 숫자를 첫 번째 피연산자로 저장
+            if (textBox_result.Text != "")
+            {
+                firstOperand = int.Parse(textBox_result.Text);
+            }
 
-            // textBox_result.Text = currentResult.ToString(); 
+            // 위쪽 창에 " + " 기호를 양옆 띄어쓰기 포함해서 추가
+            textBox_input.Text += " + ";
+
+            // 더하기를 눌렀으니, 다음 숫자를 새로 입력받도록 설정
+            isNewInput = true;
         }
 
         // 3. 결과 보기(=) 버튼 클릭 이벤트 (button_input)
         private void button_input_Click(object sender, EventArgs e)
         {
-            // 두 번째 피연산자 가져오기 (위쪽 input 창 기준)
-            int secondOperand = int.Parse(textBox_input.Text);
-            int sum = 0;
+            if (textBox_result.Text == "") return; // 오류 방지용
 
-            if (currentOperator == "+")
-            {
-                // 두 수 더하기 계산
-                sum = currentResult + secondOperand;
-            }
+            // 두 번째 피연산자 가져오기
+            int secondOperand = int.Parse(textBox_result.Text);
 
-            // 윗쪽 텍스트 상자에 전체 수식 표시 (예: 5 + 2 = )
-            textBox_input.Text = currentResult.ToString() + " + " + secondOperand.ToString() + " = ";
+            // 더하기 계산 수행
+            int sum = firstOperand + secondOperand;
 
-            // 계산된 최종 결과를 아랫쪽 result 텍스트 상자에 문자열로 표시
+            // ★ 네가 원했던 부분! 위쪽 창에 " = 결과값" 형태로 이어 붙이기
+            textBox_input.Text += " = " + sum.ToString();
+
+            // 아래쪽 창에는 계산된 최종 결과값만 딱 표시
             textBox_result.Text = sum.ToString();
 
-            // 다음 입력을 위해 상태 초기화
-            isOperatorClicked = true;
+            // 계산이 끝났으니, 다음 번에 숫자를 누르면 리셋되도록 설정
+            isNewInput = true;
         }
     }
 }
