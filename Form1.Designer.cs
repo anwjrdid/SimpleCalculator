@@ -178,6 +178,7 @@
             button_Lpare.TabIndex = 25;
             button_Lpare.Text = "（";
             button_Lpare.UseVisualStyleBackColor = true;
+            button_Lpare.Click += button_Lpare_Click;
             // 
             // button_Rpare
             // 
@@ -189,6 +190,7 @@
             button_Rpare.TabIndex = 26;
             button_Rpare.Text = "）";
             button_Rpare.UseVisualStyleBackColor = true;
+            button_Rpare.Click += button_Rpare_Click;
             // 
             // button_del
             // 
