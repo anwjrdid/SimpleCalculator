@@ -5,7 +5,6 @@ namespace SimpleCalculator
 {
     public partial class Form1 : Form
     {
-        // ★ 변경: 소수점 계산을 위해 int를 double로 싹 바꿨어!
         double firstOperand = 0;
         string currentNumber = "";
         string currentOperator = "";
@@ -17,7 +16,7 @@ namespace SimpleCalculator
             textBox_result.Text = "";
         }
 
-        // 1. 숫자 버튼 클릭 (button_0 ~ button_9)
+        // 1. 숫자 버튼 클릭
         private void NumberButton_Click(object sender, EventArgs e)
         {
             Button btn = (Button)sender;
@@ -32,8 +31,18 @@ namespace SimpleCalculator
                 isCalculated = false;
             }
 
-            currentNumber += btn.Text;
-            textBox_input.Text += btn.Text;
+            // 음수라서 괄호가 쳐져 있다면, 괄호 부분까지 화면에서 지우고 새 숫자 붙여서 다시 괄호 씌우기!
+            if (currentNumber.StartsWith("-"))
+            {
+                textBox_input.Text = textBox_input.Text.Substring(0, textBox_input.Text.Length - (currentNumber.Length + 2));
+                currentNumber += btn.Text;
+                textBox_input.Text += "(" + currentNumber + ")";
+            }
+            else
+            {
+                currentNumber += btn.Text;
+                textBox_input.Text += btn.Text;
+            }
         }
 
         // 중간 계산 함수
@@ -41,7 +50,6 @@ namespace SimpleCalculator
         {
             if (currentOperator == "" || currentNumber == "" || currentNumber == "-") return;
 
-            // ★ 변경: int.Parse 대신 double.Parse 사용!
             double secondOperand = double.Parse(currentNumber);
 
             if (currentOperator == "+") firstOperand += secondOperand;
@@ -51,61 +59,78 @@ namespace SimpleCalculator
             {
                 if (secondOperand != 0) firstOperand /= secondOperand;
             }
+            // ★ 새로 추가된 기능: 거듭제곱(**) 계산 로직!
+            else if (currentOperator == "**")
+            {
+                // Math.Pow(5, 2) 하면 5의 2승인 25가 나오는 함수야!
+                firstOperand = Math.Pow(firstOperand, secondOperand);
+            }
         }
 
-        // 2-1. 더하기(+) 버튼
+        // 2-1. 더하기(+)
         private void button_plus_Click(object sender, EventArgs e)
         {
             if (isCalculated || currentNumber == "" || currentNumber == "-") return;
-
             if (currentOperator != "") CalculateIntermediate();
-            else firstOperand = double.Parse(currentNumber); // ★ 변경
+            else firstOperand = double.Parse(currentNumber);
 
             currentOperator = "+";
             textBox_input.Text += " + ";
             currentNumber = "";
         }
 
-        // 2-2. 빼기(-) 버튼
+        // 2-2. 빼기(-)
         private void button_sub_Click(object sender, EventArgs e)
         {
             if (isCalculated || currentNumber == "" || currentNumber == "-") return;
-
             if (currentOperator != "") CalculateIntermediate();
-            else firstOperand = double.Parse(currentNumber); // ★ 변경
+            else firstOperand = double.Parse(currentNumber);
 
             currentOperator = "-";
             textBox_input.Text += " - ";
             currentNumber = "";
         }
 
-        // 2-3. 곱하기(*) 버튼
+        // 2-3. 곱하기(*)
         private void button_multiply_Click(object sender, EventArgs e)
         {
-            if (isCalculated || currentNumber == "" || currentNumber == "-") return;
+            if (isCalculated) return;
 
+            // ★ 핵심 로직: 방금 '*'를 눌렀는데 또 '*'를 누른 거라면?
+            if (currentNumber == "" && currentOperator == "*")
+            {
+                currentOperator = "**"; // 연산자를 거듭제곱으로 변경!
+
+                // 화면의 " * " 기호를 " ** "로 싹 바꿔치기
+                if (textBox_input.Text.EndsWith(" * "))
+                {
+                    textBox_input.Text = textBox_input.Text.Substring(0, textBox_input.Text.Length - 3) + " ** ";
+                }
+                return; // 두 번째 숫자가 들어올 때까지 대기
+            }
+
+            if (currentNumber == "" || currentNumber == "-") return;
             if (currentOperator != "") CalculateIntermediate();
-            else firstOperand = double.Parse(currentNumber); // ★ 변경
+            else firstOperand = double.Parse(currentNumber);
 
             currentOperator = "*";
             textBox_input.Text += " * ";
             currentNumber = "";
         }
 
-        // 2-4. 나누기(/) 버튼
+        // 2-4. 나누기(/)
         private void button_divide_Click(object sender, EventArgs e)
         {
             if (isCalculated || currentNumber == "" || currentNumber == "-") return;
-
             if (currentOperator != "") CalculateIntermediate();
-            else firstOperand = double.Parse(currentNumber); // ★ 변경
+            else firstOperand = double.Parse(currentNumber);
 
             currentOperator = "/";
             textBox_input.Text += " / ";
             currentNumber = "";
         }
 
-        // 3. 결과 보기(=) 버튼
+        // 3. 결과 보기(=)
         private void button_input_Click(object sender, EventArgs e)
         {
             if (currentNumber == "" || currentOperator == "" || currentNumber == "-") return;
@@ -120,7 +145,7 @@ namespace SimpleCalculator
             currentOperator = "";
         }
 
-        // 4. C (Clear) 버튼
+        // 4. C (Clear)
         private void button_c_Click(object sender, EventArgs e)
         {
             textBox_input.Clear();
@@ -131,7 +156,7 @@ namespace SimpleCalculator
             isCalculated = false;
         }
 
-        // 5. CE (Clear Entry) 버튼
+        // 5. CE (Clear Entry)
         private void button_ce_Click(object sender, EventArgs e)
         {
             if (isCalculated)
@@ -142,7 +167,8 @@ namespace SimpleCalculator
 
             if (currentNumber.Length > 0)
             {
-                textBox_input.Text = textBox_input.Text.Substring(0, textBox_input.Text.Length - currentNumber.Length);
+                int oldLength = currentNumber.StartsWith("-") ? currentNumber.Length + 2 : currentNumber.Length;
+                textBox_input.Text = textBox_input.Text.Substring(0, textBox_input.Text.Length - oldLength);
                 currentNumber = "";
             }
         }
@@ -150,28 +176,47 @@ namespace SimpleCalculator
         // 6. Del 버튼
         private void button_del_Click(object sender, EventArgs e)
         {
-            if (isCalculated) return;
+            if (isCalculated || currentNumber.Length == 0) return;
 
-            if (currentNumber.Length > 0)
+            if (currentNumber.StartsWith("-"))
             {
-                textBox_input.Text = textBox_input.Text.Remove(textBox_input.Text.Length - 1);
+                textBox_input.Text = textBox_input.Text.Substring(0, textBox_input.Text.Length - (currentNumber.Length + 2));
                 currentNumber = currentNumber.Remove(currentNumber.Length - 1);
+
+                if (currentNumber == "-")
+                {
+                    currentNumber = "";
+                }
+                else
+                {
+                    textBox_input.Text += "(" + currentNumber + ")";
+                }
+            }
+            else
+            {
+                textBox_input.Text = textBox_input.Text.Substring(0, textBox_input.Text.Length - currentNumber.Length);
+                currentNumber = currentNumber.Remove(currentNumber.Length - 1);
+                textBox_input.Text += currentNumber;
             }
         }
 
-        // ★ 새로 추가된 7. 소수점(.) 버튼
+        // 7. 소수점(.) 버튼
         private void button_dot_Click(object sender, EventArgs e)
         {
             if (isCalculated) return;
 
-            // 소수점이 아직 없을 때만 찍을 수 있게 방지
             if (!currentNumber.Contains("."))
             {
                 if (currentNumber == "")
                 {
-                    // 아무것도 안 쳤는데 . 누르면 0. 으로 시작!
                     currentNumber = "0.";
                     textBox_input.Text += "0.";
+                }
+                else if (currentNumber.StartsWith("-"))
+                {
+                    textBox_input.Text = textBox_input.Text.Substring(0, textBox_input.Text.Length - (currentNumber.Length + 2));
+                    currentNumber += ".";
+                    textBox_input.Text += "(" + currentNumber + ")";
                 }
                 else
                 {
@@ -181,29 +226,23 @@ namespace SimpleCalculator
             }
         }
 
-        // ★ 새로 추가된 8. 음수/양수 전환(+/-) 버튼
+        // 8. 음수/양수 전환(+/-) 버튼
         private void button_negative_Click(object sender, EventArgs e)
         {
-            // 숫자가 아예 없거나, 이미 계산이 끝난 상태면 무시
             if (isCalculated || currentNumber == "") return;
 
-            // 1. 화면(textBox_input)에서 지금 치고 있던 숫자를 잠시 지워둠
-            textBox_input.Text = textBox_input.Text.Substring(0, textBox_input.Text.Length - currentNumber.Length);
+            int oldLength = currentNumber.StartsWith("-") ? currentNumber.Length + 2 : currentNumber.Length;
+            textBox_input.Text = textBox_input.Text.Substring(0, textBox_input.Text.Length - oldLength);
 
-            // 2. 부호 바꾸기 로직
             if (currentNumber.StartsWith("-"))
-            {
-                // 이미 음수면 맨 앞의 '-'를 잘라내서 양수로 만듦
                 currentNumber = currentNumber.Substring(1);
-            }
             else
-            {
-                // 양수면 맨 앞에 '-'를 붙여서 음수로 만듦
                 currentNumber = "-" + currentNumber;
-            }
 
-            // 3. 부호가 바뀐 숫자를 화면(textBox_input)에 다시 예쁘게 붙여줌
-            textBox_input.Text += currentNumber;
+            if (currentNumber.StartsWith("-"))
+                textBox_input.Text += "(" + currentNumber + ")";
+            else
+                textBox_input.Text += currentNumber;
         }
     }
 }
