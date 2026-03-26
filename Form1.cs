@@ -7,14 +7,12 @@ namespace SimpleCalculator
     {
         int firstOperand = 0; // 첫 번째 숫자 저장할 공간
         string currentNumber = ""; // 화면에 안 띄우고 몰래 숫자를 기억해 둘 공간
-        string currentOperator = ""; // ★ 추가: 어떤 연산자를 눌렀는지 기억할 공간
+        string currentOperator = ""; // 어떤 연산자를 눌렀는지 기억할 공간
         bool isCalculated = false; // '=' 버튼이 눌려서 계산이 끝났는지 확인하는 용도
 
         public Form1()
         {
             InitializeComponent();
-
-            // 처음 켰을 때 아래쪽 결과창은 아무것도 없이 깨끗하게 비워두기!
             textBox_result.Text = "";
         }
 
@@ -29,7 +27,7 @@ namespace SimpleCalculator
                 textBox_input.Clear();
                 textBox_result.Clear();
                 currentNumber = "";
-                currentOperator = ""; // ★ 연산자도 리셋
+                currentOperator = "";
                 isCalculated = false;
             }
 
@@ -41,8 +39,11 @@ namespace SimpleCalculator
         // 2-1. 더하기(+) 버튼 클릭 이벤트 (button_plus)
         private void button_plus_Click(object sender, EventArgs e)
         {
-            if (currentNumber != "") firstOperand = int.Parse(currentNumber);
-            currentOperator = "+"; // ★ 더하기 기호 저장
+            // ★ 버그 해결 1 & 2: 계산이 끝났거나, 숫자가 입력되지 않은 상태면 연산자 입력 무시!
+            if (isCalculated || currentNumber == "") return;
+
+            firstOperand = int.Parse(currentNumber);
+            currentOperator = "+";
             textBox_input.Text += " + ";
             currentNumber = "";
         }
@@ -50,8 +51,11 @@ namespace SimpleCalculator
         // 2-2. 빼기(-) 버튼 클릭 이벤트 (button_sub)
         private void button_sub_Click(object sender, EventArgs e)
         {
-            if (currentNumber != "") firstOperand = int.Parse(currentNumber);
-            currentOperator = "-"; // ★ 빼기 기호 저장
+            // ★ 버그 해결
+            if (isCalculated || currentNumber == "") return;
+
+            firstOperand = int.Parse(currentNumber);
+            currentOperator = "-";
             textBox_input.Text += " - ";
             currentNumber = "";
         }
@@ -59,8 +63,11 @@ namespace SimpleCalculator
         // 2-3. 곱하기(*) 버튼 클릭 이벤트 (button_multiply)
         private void button_multiply_Click(object sender, EventArgs e)
         {
-            if (currentNumber != "") firstOperand = int.Parse(currentNumber);
-            currentOperator = "*"; // ★ 곱하기 기호 저장
+            // ★ 버그 해결
+            if (isCalculated || currentNumber == "") return;
+
+            firstOperand = int.Parse(currentNumber);
+            currentOperator = "*";
             textBox_input.Text += " * ";
             currentNumber = "";
         }
@@ -68,8 +75,11 @@ namespace SimpleCalculator
         // 2-4. 나누기(/) 버튼 클릭 이벤트 (button_divide)
         private void button_divide_Click(object sender, EventArgs e)
         {
-            if (currentNumber != "") firstOperand = int.Parse(currentNumber);
-            currentOperator = "/"; // ★ 나누기 기호 저장
+            // ★ 버그 해결
+            if (isCalculated || currentNumber == "") return;
+
+            firstOperand = int.Parse(currentNumber);
+            currentOperator = "/";
             textBox_input.Text += " / ";
             currentNumber = "";
         }
@@ -82,9 +92,9 @@ namespace SimpleCalculator
 
             // 두 번째 피연산자 가져오기
             int secondOperand = int.Parse(currentNumber);
-            int result = 0; // ★ sum 대신 result로 이름 변경
+            int result = 0;
 
-            // ★ 추가: 저장된 연산자에 따라 사칙연산 수행!
+            // 저장된 연산자에 따라 사칙연산 수행!
             if (currentOperator == "+")
             {
                 result = firstOperand + secondOperand;
@@ -99,7 +109,7 @@ namespace SimpleCalculator
             }
             else if (currentOperator == "/")
             {
-                if (secondOperand != 0) // 0으로 나누면 튕기니까 예외 처리
+                if (secondOperand != 0)
                 {
                     result = firstOperand / secondOperand;
                 }
