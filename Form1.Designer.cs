@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            label1 = new Label();
+            APP_Name = new Label();
             textBox_input = new TextBox();
             textBox_result = new TextBox();
             button_ce = new Button();
@@ -53,16 +53,16 @@
             button_input = new Button();
             SuspendLayout();
             // 
-            // label1
+            // APP_Name
             // 
-            label1.AutoSize = true;
-            label1.Font = new Font("문체부 바탕체", 25F, FontStyle.Bold);
-            label1.ForeColor = SystemColors.HotTrack;
-            label1.Location = new Point(29, 21);
-            label1.Name = "label1";
-            label1.Size = new Size(298, 42);
-            label1.TabIndex = 0;
-            label1.Text = "Simple Calculator";
+            APP_Name.AutoSize = true;
+            APP_Name.Font = new Font("문체부 바탕체", 25F, FontStyle.Bold);
+            APP_Name.ForeColor = SystemColors.HotTrack;
+            APP_Name.Location = new Point(29, 21);
+            APP_Name.Name = "APP_Name";
+            APP_Name.Size = new Size(298, 42);
+            APP_Name.TabIndex = 0;
+            APP_Name.Text = "Simple Calculator";
             // 
             // textBox_input
             // 
@@ -86,6 +86,7 @@
             button_ce.TabIndex = 3;
             button_ce.Text = "CE";
             button_ce.UseVisualStyleBackColor = true;
+            button_ce.Click += button_ce_Click;
             // 
             // button_c
             // 
@@ -95,6 +96,7 @@
             button_c.TabIndex = 4;
             button_c.Text = "C";
             button_c.UseVisualStyleBackColor = true;
+            button_c.Click += button_c_Click;
             // 
             // button_del
             // 
@@ -300,16 +302,16 @@
             Controls.Add(button_ce);
             Controls.Add(textBox_result);
             Controls.Add(textBox_input);
-            Controls.Add(label1);
+            Controls.Add(APP_Name);
             Name = "Form1";
-            Text = "Form1";
+            Text = "Calculator v1.0";
             ResumeLayout(false);
             PerformLayout();
         }
 
         #endregion
 
-        private Label label1;
+        private Label APP_Name;
         private TextBox textBox_input;
         private TextBox textBox_result;
         private Button button_ce;
