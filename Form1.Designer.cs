@@ -106,6 +106,7 @@
             button_del.TabIndex = 5;
             button_del.Text = "Del";
             button_del.UseVisualStyleBackColor = true;
+            button_del.Click += button_del_Click;
             // 
             // button_divide
             // 

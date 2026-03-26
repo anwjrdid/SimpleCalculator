@@ -149,5 +149,22 @@ namespace SimpleCalculator
                 currentNumber = "";
             }
         }
+
+        // ★ 새로 추가된 6. Del 버튼: 마지막 글자 하나만 쏙 지우기
+        private void button_del_Click(object sender, EventArgs e)
+        {
+            // 이미 '='을 눌러서 계산이 다 끝난 상태면 뒤로 지울 게 없으니 그냥 무시!
+            if (isCalculated) return;
+
+            // 현재 치고 있는 숫자(currentNumber)가 1글자 이상 있을 때만 지우기 작동
+            if (currentNumber.Length > 0)
+            {
+                // 1. 위쪽 화면(textBox_input)에서 맨 끝에 있는 글자 하나 싹둑 잘라내기
+                textBox_input.Text = textBox_input.Text.Remove(textBox_input.Text.Length - 1);
+
+                // 2. 컴퓨터가 몰래 기억하던 숫자(currentNumber)에서도 맨 끝 글자 싹둑 잘라내기
+                currentNumber = currentNumber.Remove(currentNumber.Length - 1);
+            }
+        }
     }
 }
