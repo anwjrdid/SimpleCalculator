@@ -432,7 +432,7 @@
             button_multiply.Name = "button_multiply";
             button_multiply.Size = new Size(182, 42);
             button_multiply.TabIndex = 10;
-            button_multiply.Text = "*";
+            button_multiply.Text = "×";
             button_multiply.UseVisualStyleBackColor = true;
             button_multiply.Click += button_multiply_Click;
             // 

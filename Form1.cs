@@ -49,38 +49,51 @@ namespace SimpleCalculator
             }
         }
 
-        // ★ 새로 추가된 수식 평가 엔진: 우선순위 및 암묵적 곱셈(2(3)=6) 완벽 처리!
+        // 수식 평가 엔진 (암묵적 곱셈 처리 포함)
         private double Evaluate(string expr)
         {
             expr = expr.Replace(" ", ""); // 띄어쓰기 전부 제거
 
-            // 1. 괄호부터 찾아서 해결!
+            // 1. 숨어있는 곱하기(×) 기호를 명시적으로 쏙쏙 끼워넣기!
+            string newExpr = "";
+            for (int i = 0; i < expr.Length; i++)
+            {
+                char c = expr[i];
+                newExpr += c;
+                if (i < expr.Length - 1)
+                {
+                    char nextC = expr[i + 1];
+                    bool isDigitOrDot = char.IsDigit(c) || c == '.';
+                    bool isNextDigitOrDot = char.IsDigit(nextC) || nextC == '.';
+
+                    // 규칙 A: 숫자 뒤에 여는 괄호나 루트가 오면 곱하기(×) 추가!
+                    if (isDigitOrDot && (nextC == '(' || nextC == '√'))
+                    {
+                        newExpr += "×";
+                    }
+                    // 규칙 B: 닫는 괄호 뒤에 숫자, 괄호, 루트가 오면 곱하기(×) 추가!
+                    else if (c == ')' && (isNextDigitOrDot || nextC == '(' || nextC == '√'))
+                    {
+                        newExpr += "×";
+                    }
+                }
+            }
+            expr = newExpr;
+
+            // 2. 괄호 안쪽부터 먼저 계산!
             while (expr.Contains("("))
             {
                 int close = expr.IndexOf(')');
                 int open = expr.LastIndexOf('(', close);
                 string inner = expr.Substring(open + 1, close - open - 1);
 
-                // 괄호 안쪽 수식을 먼저 계산
                 double innerResult = EvalFlat(inner);
 
                 string prefix = expr.Substring(0, open);
                 string suffix = expr.Substring(close + 1);
 
-                // 핵심: 괄호 앞에 숫자가 붙어있으면 (예: 2(9+3)) 먼저 곱해버리기!
-                if (prefix.Length > 0 && (char.IsDigit(prefix[prefix.Length - 1]) || prefix[prefix.Length - 1] == '.'))
-                {
-                    int numStart = prefix.Length - 1;
-                    while (numStart >= 0 && (char.IsDigit(prefix[numStart]) || prefix[numStart] == '.'))
-                        numStart--;
-                    numStart++;
-
-                    double multNum = double.Parse(prefix.Substring(numStart));
-                    innerResult = multNum * innerResult; // 앞 숫자랑 곱하기
-                    prefix = prefix.Substring(0, numStart);
-                }
                 // 루트 기호 처리
-                else if (prefix.EndsWith("√"))
+                if (prefix.EndsWith("√"))
                 {
                     innerResult = Math.Sqrt(innerResult);
                     prefix = prefix.Substring(0, prefix.Length - 1);
@@ -89,14 +102,14 @@ namespace SimpleCalculator
                 expr = prefix + innerResult.ToString("0.################") + suffix;
             }
 
-            // 2. 괄호가 다 풀리면 사칙연산 우선순위대로 계산
+            // 3. 괄호가 다 풀렸으니 사칙연산 룰에 맞춰 계산!
             return EvalFlat(expr);
         }
 
-        // 괄호가 없는 평범한 수식을 사칙연산 우선순위에 맞게 푸는 함수
+        // 괄호 없는 수식을 사칙연산 우선순위에 맞게 푸는 함수
         private double EvalFlat(string expr)
         {
-            List<string> tokens = Tokenize(expr); // 숫자와 기호를 조각조각 분리
+            List<string> tokens = Tokenize(expr);
 
             // 1순위: 거듭제곱(**)
             for (int i = 0; i < tokens.Count; i++)
@@ -110,20 +123,20 @@ namespace SimpleCalculator
                     i--;
                 }
             }
-            // 2순위: 곱하기, 나누기
+            // 2순위: 곱하기(×), 나누기(÷, /) (왼쪽에서 오른쪽으로!)
             for (int i = 0; i < tokens.Count; i++)
             {
-                if (tokens[i] == "*" || tokens[i] == "÷" || tokens[i] == "/")
+                if (tokens[i] == "×" || tokens[i] == "÷" || tokens[i] == "/")
                 {
                     double left = double.Parse(tokens[i - 1]);
                     double right = double.Parse(tokens[i + 1]);
-                    double res = tokens[i] == "*" ? left * right : left / right;
+                    double res = tokens[i] == "×" ? left * right : left / right;
                     tokens[i - 1] = res.ToString("0.################");
                     tokens.RemoveRange(i, 2);
                     i--;
                 }
             }
-            // 3순위: 더하기, 빼기
+            // 3순위: 더하기(+), 빼기(-)
             for (int i = 0; i < tokens.Count; i++)
             {
                 if (tokens[i] == "+" || tokens[i] == "-")
@@ -141,7 +154,7 @@ namespace SimpleCalculator
             return 0;
         }
 
-        // 문자열을 기호와 숫자로 잘라주는 보조 함수 (음수 부호 완벽 구별)
+        // 문자열을 기호와 숫자로 잘라주는 보조 함수 
         private List<string> Tokenize(string expr)
         {
             List<string> tokens = new List<string>();
@@ -155,8 +168,8 @@ namespace SimpleCalculator
                 }
                 else
                 {
-                    // '-'가 빼기 기호인지, 음수를 뜻하는 기호인지 완벽 구별
-                    bool isOperator = (tokens.Count > 0) && ("+-*÷/".Contains(tokens[tokens.Count - 1]) || tokens[tokens.Count - 1] == "**");
+                    // ★ 변경: "×" 기호 인식 추가
+                    bool isOperator = (tokens.Count > 0) && ("+-×÷/".Contains(tokens[tokens.Count - 1]) || tokens[tokens.Count - 1] == "**");
                     if (c == '-' && currentNum == "" && (tokens.Count == 0 || isOperator))
                     {
                         currentNum += c;
@@ -190,7 +203,7 @@ namespace SimpleCalculator
             return tokens;
         }
 
-        // 연산자 버튼 공통 처리 (방어 코드 포함)
+        // 연산자 버튼 공통 처리
         private void HandleOperator(string op)
         {
             if (isCalculated)
@@ -206,7 +219,6 @@ namespace SimpleCalculator
             string txt = textBox_input.Text.Trim();
             if (txt == "") return;
 
-            // 숫자나 닫는 괄호, 루트 뒤에만 연산자가 올 수 있음
             if (currentNumber == "" && !txt.EndsWith(")") && !txt.EndsWith("√")) return;
 
             textBox_input.Text += " " + op + " ";
@@ -217,16 +229,19 @@ namespace SimpleCalculator
         private void button_plus_Click(object sender, EventArgs e) { HandleOperator("+"); }
         // 2-2. 빼기(-)
         private void button_sub_Click(object sender, EventArgs e) { HandleOperator("-"); }
-        // 2-3. 곱하기(*)
+
+        // ★ 2-3. 곱하기(×) - UI에서 '×' 기호 사용
         private void button_multiply_Click(object sender, EventArgs e)
         {
-            if (textBox_input.Text.EndsWith(" * "))
+            // × 버튼을 두 번 누르면 거듭제곱(**)으로 변환
+            if (textBox_input.Text.EndsWith(" × "))
             {
                 textBox_input.Text = textBox_input.Text.Substring(0, textBox_input.Text.Length - 3) + " ** ";
                 return;
             }
-            HandleOperator("*");
+            HandleOperator("×");
         }
+
         // 2-4. 나누기(÷)
         private void button_divide_Click(object sender, EventArgs e) { HandleOperator("÷"); }
 
@@ -236,14 +251,13 @@ namespace SimpleCalculator
             if (isCalculated) return;
 
             string txt = textBox_input.Text.Trim();
-            // 마지막이 연산자로 끝나면 계산 안 함
-            if (txt == "" || txt.EndsWith("+") || txt.EndsWith("-") || txt.EndsWith("*") || txt.EndsWith("/") || txt.EndsWith("÷")) return;
+            // 마지막이 연산자로 끝나면 계산 안 함 (×, ** 포함)
+            if (txt == "" || txt.EndsWith("+") || txt.EndsWith("-") || txt.EndsWith("×") || txt.EndsWith("/") || txt.EndsWith("÷") || txt.EndsWith("**")) return;
 
             try
             {
                 string expr = textBox_input.Text;
 
-                // 혹시 실수로 괄호를 안 닫았으면 컴퓨터가 센스 있게 자동으로 닫아줌!
                 int openCount = expr.Split('(').Length - 1;
                 int closeCount = expr.Split(')').Length - 1;
                 while (openCount > closeCount)
@@ -253,7 +267,6 @@ namespace SimpleCalculator
                     closeCount++;
                 }
 
-                // ★ 완성된 수식 엔진으로 정답 추출!
                 double result = Evaluate(expr);
 
                 textBox_input.Text += " = " + result.ToString("0.################");
@@ -391,7 +404,6 @@ namespace SimpleCalculator
         // 11. 오른쪽 괄호 ) 버튼
         private void button_Rpare_Click(object sender, EventArgs e)
         {
-            // 여는 괄호보다 닫는 괄호를 더 많이 누르면 무시
             int openCount = textBox_input.Text.Split('(').Length - 1;
             int closeCount = textBox_input.Text.Split(')').Length - 1;
             if (openCount <= closeCount) return;
